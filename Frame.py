@@ -107,7 +107,6 @@ class Frame(wx.Frame):
       print("Enter pressed") 
       
     def OnClient(self, event):
-        
         connectClient(IP_address,Port)
 
     def OnClose(self, event):

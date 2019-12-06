@@ -9,6 +9,7 @@
 #wxversion.select("2.8")
 import wx, wx.html
 import sys
+from client import connectClient
 
 aboutText = """<p>Sorry, there is no information about this program. It is
 running on version %(wxpy)s of <b>wxPython</b> and %(python)s of <b>Python</b>.
@@ -52,6 +53,8 @@ class Frame(wx.Frame):
 
         menuBar = wx.MenuBar()
         menu = wx.Menu()
+        m_client = menu.Append(wx.ID_NEW, "Client\tAlt-C", "To be a client")
+        self.Bind(wx.EVT_MENU, self.infDialog, m_client)
         m_exit = menu.Append(wx.ID_EXIT, "E&xit\tAlt-X", "Close window and exit program.")
         self.Bind(wx.EVT_MENU, self.OnClose, m_exit)
         menuBar.Append(menu, "&File")
@@ -75,23 +78,37 @@ class Frame(wx.Frame):
         m_close.Bind(wx.EVT_BUTTON, self.OnClose)
         box.Add(m_close, 0, wx.ALL, 10)
         
+        # Box of data send
+        multiLabel = wx.StaticText(panel, -1, "Multi-line")
+        multiText = wx.TextCtrl(panel, -1,"Text to send",size=(600, 150), style=wx.TE_MULTILINE)
+        multiText.SetInsertionPoint(0)
 
-        hbox3 = wx.BoxSizer(wx.HORIZONTAL) 
-        l3 = wx.StaticText(panel, -1, "Multiline Text") 
-            
-        hbox3.Add(l3,1, wx.EXPAND|wx.ALIGN_LEFT|wx.ALL,5) 
-        self.t3 = wx.TextCtrl(panel,size = (200,100),style = wx.TE_MULTILINE) 
-            
-        hbox3.Add(self.t3,1,wx.EXPAND|wx.ALIGN_LEFT|wx.ALL,5) 
-        vbox.Add(hbox3) 
-        self.t3.Bind(wx.EVT_TEXT_ENTER,self.OnEnterPressed)  
-
+        sizer = wx.FlexGridSizer(cols=2, hgap=6, vgap=10)
+        sizer.AddMany([multiLabel, multiText])
+        # end Box of data send
         
         panel.SetSizer(box)
         panel.Layout()
+        
+    def infDialog (self, msg, title):
+        """ Display Info Dialog Message """
+        font = wx.Font(14, wx.MODERN, wx.NORMAL, wx.NORMAL)
+        style = wx.OK | wx.ICON_INFORMATION | wx.STAY_ON_TOP
+        dialog = wx.MessageDialog(self, msg, title, style)
+        dialog.CenterOnParent()
+        dialog.SetFont(font)
+        result = dialog.ShowModal()
+        if result == wx.ID_OK:
+            print(dialog.GetFont().GetFaceName())
+        dialog.Destroy()
+        return
 
     def OnEnterPressed(self,event): 
       print("Enter pressed") 
+      
+    def OnClient(self, event):
+        
+        connectClient(IP_address,Port)
 
     def OnClose(self, event):
         dlg = wx.MessageDialog(self, 

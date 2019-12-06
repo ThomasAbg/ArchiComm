@@ -2,13 +2,18 @@ import socket
 import select
 import sys
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+''' 
 if len(sys.argv) != 3:
     print("Correct usage: script, IP address, port number")
     exit()
 IP_address = str(sys.argv[1])
-Port = int(sys.argv[2])
-server.connect((IP_address, Port))
+Port = int(sys.argv[2]) '''
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+def connectClient(IP_address,Port):
+    server.connect((IP_address, Port))
+
 
 while True:
     sockets_list = [sys.stdin, server]

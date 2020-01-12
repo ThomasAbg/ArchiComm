@@ -1,129 +1,174 @@
-#!/usr/bin/python
-# -*- coding: <<encoding>> -*-
 #-------------------------------------------------------------------------------
-#   <<project>>
-# 
+# Name:        ArchiComm
+# Purpose:
+#
+# Author:      Thomas
+#
+# Created:     11/01/2020
+# Copyright:   (c) Thomas 2020
+# Licence:     <priver>
 #-------------------------------------------------------------------------------
+# tuto http://sebsauvage.net/python/gui/index_fr.html#import
+# tuto http://apprendre-python.com/page-tkinter-interface-graphique-python-tutoriel
+# http://sebsauvage.net/python/snyppets/index.html#tkinter_cxfreeze
 
-#import wxversion
-#wxversion.select("2.8")
-import wx, wx.html
+# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+
+
+try:
+    # for Python2
+    from Tkinter import *   ## notice capitalized T in Tkinter 
+except ImportError:
+    # for Python3
+    from tkinter import *   ## notice lowercase 't' in tkinter here
+
+from tkinter import messagebox
+import tkinter as tk
+from tkinter import simpledialog as sdg
+import datetime
 import sys
-from client import connectClient
 
-aboutText = """<p>Sorry, there is no information about this program. It is
-running on version %(wxpy)s of <b>wxPython</b> and %(python)s of <b>Python</b>.
-See <a href="http://wiki.wxpython.org">wxPython Wiki</a></p>""" 
+# Here, we are creating our class, Window, and inheriting from the Frame
+# class. Frame is a class from the tkinter module. (see Lib/tkinter/__init__)
+class Window(Frame):
+    # Define settings upon initialization. Here you can specify
+    def __init__(self, master=None):
+        # parameters that you want to send through the Frame class.
+        Frame.__init__(self, master)
 
-class HtmlWindow(wx.html.HtmlWindow): 
-    def __init__(self, parent, id, size=(600,400)):
-        wx.html.HtmlWindow.__init__(self,parent, id, size=size)
-        if "gtk2" in wx.PlatformInfo:
-            self.SetStandardFonts()
-        frameicon = wx.Icon("./Figures/logo.ico", wx.BITMAP_TYPE_ICO)
-        frame  = wx.Frame(None, -1)
-        frame.SetIcon(frameicon)
-        frame.Show()
+        #reference to the master widget, which is the tk window
+        self.master = master
 
-    def OnLinkClicked(self, link):
-        wx.LaunchDefaultBrowser(link.GetHref())
+        #with that, we want to then run init_window, which doesn't yet exist
+        self.init_window()
+
+    #Creation of init_window
+    def init_window(self):
+        self.pack(fill=BOTH, expand=1) # allowing the widget to take the full space of the root window
+
+        menu = Menu(self.master)   # creating a menu instance
+        self.master.config(menu=menu)
+        file = Menu(menu) # create the file object)
+        file.add_command(label="Connect", background="lightgray", activebackground='green', command=self.connect_action)
+        file.add_command(label="Exit", background="lightgray",  activebackground='red', command=self.close_application) # adds a command to the menu option, calling it exit, and the command it runs on event is Exit
+        menu.add_cascade(label="File", menu=file) #added "file" to our menu
+        edit = Menu(menu) # create the file object)
+        edit.add_command(label="Undo") # adds a command to the menu option, calling it exit, and the command it runs on event is Exit
+        menu.add_cascade(label="Edit", menu=edit)   #added "file" to our menu
+
+        self.affichage1Page()
+
+    def affichage1Page(self):
+        self.frame = Frame(self, width=self.winfo_screenwidth(), height=self.winfo_screenheight())
+        self.entryVariable = tk.StringVar()            # création d'un widget pour entrer du texte
+        self.entry = tk.Entry(self,textvariable=self.entryVariable) # contenu du widget est stocker dans la variable  "self.entryVariable"
+        self.entry.grid(column=0,row=0,sticky='EW')         # placement du widget dans la grille et reste coller au bord west
+        self.entry.bind("<Return>", self.OnPressEnter)      # récupère ce qu'il y a décrit dans le widget lors de l'appuis sur le bouton
+        self.entryVariable.set(u"Enter texte ici.")
+
+        button = tk.Button(self,text=u"click ici !",   # création d'un bouton, attaché à son parent, et avec du texte
+            command=self.OnButtonClick)                     # active la détection d'appuis sur le bouton
+        button.grid(column=1,row=0)                         # placement du bouton sur la grille
+
+        self.labelVariable = tk.StringVar()                        #
+        label = tk.Label(self, textvariable=self.labelVariable,    # Label pour afficher du texte
+        anchor="w",fg="white",bg="green",text=u"réponse")               # création d'un label avec une couleur de texte, couleur de fond, et texte
+        label.grid(column=0,row=1,columnspan=2,sticky='EW')             # placement du label
+        self.labelVariable.set(u"Le texte converti sera ici")
+
+        self.grid_columnconfigure(0,weight=1)   # permet de redimentioner en manuel la taille de la fenetre
+        self.entry.focus_set()                       # Le champ texte sera automatiquement re-sélectionné après que l'utilisateur ait pressé ENTREE
+        self.entry.selection_range(0, tk.END)      # Il pourra ainsi taper immédiatement un nouveau texte dans le champ (en remplaçant le texte existant).
+
+
+    def OnButtonClick(self):                                        # nouvelle méthode pour faire une/des action(s) quand il y a un appuis sur le bouton qui est détecté
+        print("Clicked button !" + " texte écrit:", self.entryVariable.get(), "Date heure:", datetime.datetime.now())   # Log comme quoi qqun à appuyé sur le bouton
+        self.labelVariable.set( self.entryVariable.get()+" (You pressed button 1)" )              # viens écrire du contenu dans le label
+        self.entry.focus_set()                       # Le champ texte sera automatiquement re-sélectionné après que l'utilisateur ait pressé ENTREE
+        self.entry.selection_range(0, tk.END)
+
+    def OnPressEnter(self,event):                                                   # nouvelle méthode pour faire une/des action(s) quand la touche Entre est appuyée lorsque la sélection est sur le widget entry
+        print("Pressed enter ! texte écrit: {0} Date heure: {1}" .format(self.entryVariable.get(),datetime.datetime.now())) # Log comme quoi qqun à appuyé sur la touche Entre
+        self.labelVariable.set( self.entryVariable.get()+" (You pressed ENTER)" )   # viens écrire ce qu'i y a d'écrit dans  dans le label
+        self.entry.focus_set()                       # Le champ texte sera automatiquement re-sélectionné après que l'utilisateur ait pressé ENTREE
+        self.entry.selection_range(0, tk.END)
         
-class AboutBox(wx.Dialog):
-    def __init__(self):
-        wx.Dialog.__init__(self, None, -1, "About <<project>>",
-            style=wx.DEFAULT_DIALOG_STYLE|wx.THICK_FRAME|wx.RESIZE_BORDER|
-                wx.TAB_TRAVERSAL)
-        hwin = HtmlWindow(self, -1, size=(400,200))
-        vers = {}
-        vers["python"] = sys.version.split()[0]
-        vers["wxpy"] = wx.VERSION_STRING
-        hwin.SetPage(aboutText % vers)
-        btn = hwin.FindWindowById(wx.ID_OK)
-        irep = hwin.GetInternalRepresentation()
-        hwin.SetSize((irep.GetWidth()+25, irep.GetHeight()+10))
-        self.SetClientSize(hwin.GetSize())
-        self.CentreOnParent(wx.BOTH)
-        self.SetFocus()
+    def connect_action(self):
+        print("Try connection at {0}".format(datetime.datetime.now()))
+        CustomDialog(self, title="Choisie un server")
 
-class Frame(wx.Frame):
-    def __init__(self, title):
-        wx.Frame.__init__(self, None, title=title, size=(600,400))
-        self.Center()
-        self.Bind(wx.EVT_CLOSE, self.OnClose)
+    def close_application(self):
+        print("Menu, Exit, à", datetime.datetime.now())
+        if tk.messagebox.askokcancel("Quit", "Do you really wish to quit?"):
+           print("Fermeture de la fenetre: {0} à {1}".format(self.master.title(), datetime.datetime.now()))  # log indique la fermeture de la fenetre
+           self.master.quit()
+        else:
+             print("Tentative de fermeture de la fenetre: {0} à {1}" .format(self.master.title(), datetime.datetime.now()))
 
-        menuBar = wx.MenuBar()
-        menu = wx.Menu()
-        m_client = menu.Append(wx.ID_NEW, "Client\tAlt-C", "To be a client")
-        self.Bind(wx.EVT_MENU, self.infDialog, m_client)
-        m_exit = menu.Append(wx.ID_EXIT, "E&xit\tAlt-X", "Close window and exit program.")
-        self.Bind(wx.EVT_MENU, self.OnClose, m_exit)
-        menuBar.Append(menu, "&File")
-        menu = wx.Menu()
-        m_about = menu.Append(wx.ID_ABOUT, "&About", "Information about this program")
-        self.Bind(wx.EVT_MENU, self.OnAbout, m_about)
-        menuBar.Append(menu, "&Help")
-        self.SetMenuBar(menuBar)
+class CustomDialog(sdg.Dialog):
+    def __init__(self, parent, title=None):
+        super().__init__(parent, title=title)
         
-        self.statusbar = self.CreateStatusBar()
+    def body(self, master):
+        Label(master, text="Adresse:").grid(row=0)
+        Label(master, text="Port:").grid(row=1)
 
-        panel = wx.Panel(self)
-        box = wx.BoxSizer(wx.VERTICAL) 
-        
-        m_text = wx.StaticText(panel, -1, "Hello World!")
-        m_text.SetFont(wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD))
-        m_text.SetSize(m_text.GetBestSize())
-        box.Add(m_text, 0, wx.ALL, 10)
-        
-        m_close = wx.Button(panel, wx.ID_CLOSE, "Close")
-        m_close.Bind(wx.EVT_BUTTON, self.OnClose)
-        box.Add(m_close, 0, wx.ALL, 10)
-        
-        # Box of data send
-        multiLabel = wx.StaticText(panel, -1, "Multi-line")
-        multiText = wx.TextCtrl(panel, -1,"Text to send",size=(600, 150), style=wx.TE_MULTILINE)
-        multiText.SetInsertionPoint(0)
+        self.ip1 = Entry(master,width=4)
+        self.ip2 = Entry(master,width=4)
+        self.ip3 = Entry(master,width=4)
+        self.ip4 = Entry(master,width=4)
+        self.port = Entry(master,width=4)
 
-        sizer = wx.FlexGridSizer(cols=2, hgap=6, vgap=10)
-        sizer.AddMany([multiLabel, multiText])
-        # end Box of data send
-        
-        panel.SetSizer(box)
-        panel.Layout()
-        
-    def infDialog (self, msg, title):
-        """ Display Info Dialog Message """
-        font = wx.Font(14, wx.MODERN, wx.NORMAL, wx.NORMAL)
-        style = wx.OK | wx.ICON_INFORMATION | wx.STAY_ON_TOP
-        dialog = wx.MessageDialog(self, msg, title, style)
-        dialog.CenterOnParent()
-        dialog.SetFont(font)
-        result = dialog.ShowModal()
-        if result == wx.ID_OK:
-            print(dialog.GetFont().GetFaceName())
-        dialog.Destroy()
-        return
+        self.ip1.grid(row=0, column=1)
+        self.ip2.grid(row=0, column=2)
+        self.ip3.grid(row=0, column=3)
+        self.ip4.grid(row=0, column=4)
+        self.port.grid(row=1, column=1)
+        return self.ip1 # renvoi l'élément à focus
 
-    def OnEnterPressed(self,event): 
-      print("Enter pressed") 
-      
-    def OnClient(self, event):
-        connectClient(IP_address,Port)
+    def apply(self, title=None):
+        try: 
+            Ip1 = int(self.ip1.get())
+            Ip2 = int(self.ip2.get())
+            Ip3 = int(self.ip3.get())
+            Ip4 = int(self.ip4.get())
+            if(0 >= Ip1 or Ip1>= 255):
+                print("Premier champs de IP incorrect")
+                self.ip1.delete("", 'end')
+            else:
+                IP = (" ".join([str(Ip1), ".", str(Ip2) + ".", str(Ip3), ".", str(Ip4)])).replace(" ", "")
+                Port = int(self.port.get())
+                DataToSend.put(["Connect", IP, Port], True)
+                print("data send:", [IP, Port])
+        except ValueError: 
+            print("ip incorrect")
 
-    def OnClose(self, event):
-        dlg = wx.MessageDialog(self, 
-            "Do you really want to close this application?",
-            "Confirm Exit", wx.OK|wx.CANCEL|wx.ICON_QUESTION)
-        result = dlg.ShowModal()
-        dlg.Destroy()
-        if result == wx.ID_OK:
-            self.Destroy()
+def dimention(self):
+    global w
+    global h
+    global x
+    global y
+    w = self.winfo_screenwidth() /2
+    h = self.winfo_screenheight() /2
+    x = w/2
+    y = h/2
 
-    def OnAbout(self, event):
-        dlg = AboutBox()
-        dlg.ShowModal()
-        dlg.Destroy()  
+def algo(self):
+    print(self.labelVariable)
 
-app = wx.App(redirect=True)   # Error messages go to popup window
-top = Frame("<<project>>")
-top.Show()
-app.MainLoop()
+#if __name__ == "__main__":
+def run_window(data):
+    global DataToSend 
+    DataToSend = data
+    # root window created. Here, that would be the only window, but
+    # you can later have windows within windows.
+    root = Tk()
+    root.title('Fenetre modèle')  # on name la fonction
+    dimention(root)
+    root.geometry('%dx%d+%d+%d' % (w, h, x, y)) # dimentionne la fenetre
+    app = Window(root)  #creation of an instance
+    print("création fenetre:", root.title(), datetime.datetime.now())  # log indique la creation de la fenetre
+
+    #data.put("coucou")
+    root.mainloop()  #mainloop

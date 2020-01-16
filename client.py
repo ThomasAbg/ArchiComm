@@ -18,7 +18,6 @@ def connectClient(IP_address, Port, data_q):
         sockets_list = [sys.stdin, server]
         read_sockets, write_socket, error_socket = select.select(sockets_list, [], [])
         for socks in read_sockets:
-            print("socket:", socks)
             if socks == server:
                 data_rcv = socks.recv(2048)
                 message = data_rcv.decode()

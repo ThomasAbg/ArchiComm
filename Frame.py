@@ -58,6 +58,7 @@ class Window(Frame):
         menu.add_cascade(label="Edit", menu=edit)   #added "file" to our menu
 
         self.affichage1Page()
+        
 
     def affichage1Page(self):
         self.frame = Frame(self, width=self.winfo_screenwidth(), height=self.winfo_screenheight())
@@ -81,22 +82,26 @@ class Window(Frame):
         self.entry.focus_set()                       # Le champ texte sera automatiquement re-sélectionné après que l'utilisateur ait pressé ENTREE
         self.entry.selection_range(0, tk.END)      # Il pourra ainsi taper immédiatement un nouveau texte dans le champ (en remplaçant le texte existant).
 
-
     def OnButtonClick(self):                                        # nouvelle méthode pour faire une/des action(s) quand il y a un appuis sur le bouton qui est détecté
         print("Clicked button !" + " texte écrit:", self.entryVariable.get(), "Date heure:", datetime.datetime.now())   # Log comme quoi qqun à appuyé sur le bouton
-        self.labelVariable.set( self.entryVariable.get()+" (You pressed button 1)" )              # viens écrire du contenu dans le label
+        #self.labelVariable.set( self.entryVariable.get() )              # viens écrire du contenu dans le label
         self.entry.focus_set()                       # Le champ texte sera automatiquement re-sélectionné après que l'utilisateur ait pressé ENTREE
         self.entry.selection_range(0, tk.END)
+        DataToSend.put(["text", self.entryVariable.get(), ""], True)
 
-    def OnPressEnter(self,event):                                                   # nouvelle méthode pour faire une/des action(s) quand la touche Entre est appuyée lorsque la sélection est sur le widget entry
-        print("Pressed enter ! texte écrit: {0} Date heure: {1}" .format(self.entryVariable.get(),datetime.datetime.now())) # Log comme quoi qqun à appuyé sur la touche Entre
-        self.labelVariable.set( self.entryVariable.get()+" (You pressed ENTER)" )   # viens écrire ce qu'i y a d'écrit dans  dans le label
+    def OnPressEnter(self):                                                   # nouvelle méthode pour faire une/des action(s) quand la touche Entre est appuyée lorsque la sélection est sur le widget entry
+        print("Pressed enter ! texte écrit: {0} Date heure: {1}" .format(self.entryVariable.get(), datetime.datetime.now())) # Log comme quoi qqun à appuyé sur la touche Entre
+        #self.labelVariable.set( self.entryVariable.get() )   # viens écrire ce qu'i y a d'écrit dans  dans le label
         self.entry.focus_set()                       # Le champ texte sera automatiquement re-sélectionné après que l'utilisateur ait pressé ENTREE
         self.entry.selection_range(0, tk.END)
+        DataToSend.put(["text", self.entryVariable.get(), ""], True)
         
     def connect_action(self):
         print("Try connection at {0}".format(datetime.datetime.now()))
         CustomDialog(self, title="Choisie un server")
+        
+    def MAJRcvMsg(self, data):
+        self.labelVariable.set(data)
 
     def close_application(self):
         print("Menu, Exit, à", datetime.datetime.now())
@@ -140,7 +145,6 @@ class CustomDialog(sdg.Dialog):
                 IP = (" ".join([str(Ip1), ".", str(Ip2) + ".", str(Ip3), ".", str(Ip4)])).replace(" ", "")
                 Port = int(self.port.get())
                 DataToSend.put(["Connect", IP, Port], True)
-                print("data send:", [IP, Port])
         except ValueError: 
             print("ip incorrect")
 
@@ -154,8 +158,10 @@ def dimention(self):
     x = w/2
     y = h/2
 
-def algo(self):
-    print(self.labelVariable)
+def WriteMsgRcv(dataRcv):
+    print("coucoucoucou")
+    Window.labelVariable.set(dataRcv)
+
 
 #if __name__ == "__main__":
 def run_window(data):
@@ -172,3 +178,4 @@ def run_window(data):
 
     #data.put("coucou")
     root.mainloop()  #mainloop
+        

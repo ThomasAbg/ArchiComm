@@ -106,8 +106,8 @@ class Window(Frame):
     def close_application(self):
         print("Menu, Exit, à", datetime.datetime.now())
         if tk.messagebox.askokcancel("Quit", "Do you really wish to quit?"):
-           print("Fermeture de la fenetre: {0} à {1}".format(self.master.title(), datetime.datetime.now()))  # log indique la fermeture de la fenetre
-           self.master.quit()
+            print("Fermeture de la fenetre: {0} à {1}".format(self.master.title(), datetime.datetime.now()))  # log indique la fermeture de la fenetre
+            self.master.quit()
         else:
              print("Tentative de fermeture de la fenetre: {0} à {1}" .format(self.master.title(), datetime.datetime.now()))
 
@@ -149,19 +149,18 @@ class CustomDialog(sdg.Dialog):
             print("ip incorrect")
 
 def dimention(self):
-    global w
-    global h
-    global x
-    global y
     w = self.winfo_screenwidth() /2
     h = self.winfo_screenheight() /2
     x = w/2
     y = h/2
+    return w, h, x, y
 
-def WriteMsgRcv(dataRcv):
+def WriteMsgRcv(dataRcv, app):
     print("coucoucoucou")
-    Window.labelVariable.set(dataRcv)
+    app.labelVariable.set(dataRcv)
 
+def callback_app(app):
+    return app
 
 #if __name__ == "__main__":
 def run_window(data):
@@ -171,11 +170,13 @@ def run_window(data):
     # you can later have windows within windows.
     root = Tk()
     root.title('Fenetre modèle')  # on name la fonction
-    dimention(root)
-    root.geometry('%dx%d+%d+%d' % (w, h, x, y)) # dimentionne la fenetre
+    
+    root.geometry('%dx%d+%d+%d' % (dimention(root))) # dimentionne la fenetre
     app = Window(root)  #creation of an instance
+    callback_app(app)
     print("création fenetre:", root.title(), datetime.datetime.now())  # log indique la creation de la fenetre
 
-    #data.put("coucou")
     root.mainloop()  #mainloop
-        
+
+    print("App close")
+    DataToSend.put("exit")

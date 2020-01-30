@@ -1,39 +1,58 @@
 import socket
 import select
 import sys
+import socket
 
-''' 
-if len(sys.argv) != 3:
-    print("Correct usage: script, IP address, port number")
-    exit()
-IP_address = str(sys.argv[1])
-Port = int(sys.argv[2]) '''
+alive = True
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+CLIENT = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+CLIENT.setblocking(0)
+
+def exitClient():
+    alive = False
+    print("CHANGE alive")
 
 def connectClient(data_q):
     print("Client ok")
     dataReceive = data_q.get()
-    print("Info ac=", dataReceive)    # prints "[42, None, 'hello']"
+    data_rcv = ""
+    
     if(dataReceive[0] == "RunClient"):
+        global alive
+        alive = True
         IP_address = dataReceive[1]
         Port = dataReceive[2]
-        server.connect((IP_address, Port))
+        
+        try:
+            CLIENT.connect((IP_address, Port))
+            
+        except socket.gaierror as e:
+            print("Address-related error connecting to CLIENT: ", e, " Fail to connect to: ", IP_address, Port)
+
+        except socket.error as e:
+            print("Connection error: ", e, " Fail to connect to: ", IP_address, Port)
+        
         PourComm = data_q
-        while True:
-            sockets_list = [sys.stdin, server]
-            read_sockets, write_socket, error_socket = select.select(sockets_list, [], [])
-            for socks in read_sockets:
-                if socks == server:
-                    data_rcv = socks.recv(2048)
-                    message = data_rcv.decode()
-                    print("Message recu: ", message)
-                    PourComm.put(["rcv", message, ""], True)
-                else:
-                    dataReceive = PourComm.get()
-                    if(dataReceive[0] == "text"):
-                        byt_message = dataReceive[1].encode()
-                        server.send(byt_message)
-                        dataReceive = []
-                        
-        server.close()
+        while alive:
+            try:
+                data_rcv = CLIENT.recv(2048)
+            except socket.error:
+                print("no rcv")
+            if(not data_rcv):
+                print("No data")
+            else:
+                message = data_rcv.decode()
+                print("Message recu:", message)
+                PourComm.put(["rcv", message, ""], True)
+                data_rcv = False
+            print("alive =", alive)
+            if(alive == False):
+                break
+        CLIENT.close()
+        print("Client close")
+    print("Bye client")
+    
+def ClientSend(data):
+    byt_message = data.encode()
+    CLIENT.send(byt_message)

@@ -28,6 +28,7 @@ import tkinter as tk
 from tkinter import simpledialog as sdg
 import datetime
 import sys
+from multiprocessing import Queue
 
 # Here, we are creating our class, Window, and inheriting from the Frame
 # class. Frame is a class from the tkinter module. (see Lib/tkinter/__init__)
@@ -155,17 +156,15 @@ def dimention(self):
     y = h/2
     return w, h, x, y
 
-def WriteMsgRcv(dataRcv, app):
-    print("coucoucoucou")
+def WriteMsgRcv(dataRcv):
     app.labelVariable.set(dataRcv)
 
-def callback_app(app):
-    return app
 
 #if __name__ == "__main__":
-def run_window(data):
-    global DataToSend 
-    DataToSend = data
+def run_window(status):
+    global DataToSend
+    global app
+    DataToSend = status
     # root window created. Here, that would be the only window, but
     # you can later have windows within windows.
     root = Tk()
@@ -173,7 +172,6 @@ def run_window(data):
     
     root.geometry('%dx%d+%d+%d' % (dimention(root))) # dimentionne la fenetre
     app = Window(root)  #creation of an instance
-    callback_app(app)
     print("création fenetre:", root.title(), datetime.datetime.now())  # log indique la creation de la fenetre
 
     root.mainloop()  #mainloop

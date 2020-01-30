@@ -115,8 +115,8 @@ class Window(Frame):
         self.grid_columnconfigure(
             0, weight=1
         )  # permet de redimentioner en manuel la taille de la fenetre
-        self.entry.focus_set()  # Le champ texte sera automatiquement re-sélectionné 
-        #après que l'utilisateur ait pressé ENTREE
+        self.entry.focus_set()  # Le champ texte sera automatiquement re-sélectionné
+        # après que l'utilisateur ait pressé ENTREE
         self.entry.selection_range(
             0, tk.END
         )  # Il pourra ainsi taper immédiatement un nouveau texte dans le champ (en remplaçant le texte existant).
@@ -131,23 +131,23 @@ class Window(Frame):
             datetime.datetime.now(),
         )  # Log comme quoi qqun à appuyé sur le bouton
         # self.labelVariable.set( self.entryVariable.get() )              # viens écrire du contenu dans le label
-        self.entry.focus_set()  # Le champ texte sera automatiquement re-sélectionné 
-        #après que l'utilisateur ait pressé ENTREE
+        self.entry.focus_set()  # Le champ texte sera automatiquement re-sélectionné
+        # après que l'utilisateur ait pressé ENTREE
         self.entry.selection_range(0, tk.END)
         DataToSend.put(["text", self.entryVariable.get(), ""], True)
 
     def OnPressEnter(
         self,
-    ):  # nouvelle méthode pour faire une/des action(s) quand la touche Entre est appuyée lorsque 
-        #la sélection est sur le widget entry
+    ):  # nouvelle méthode pour faire une/des action(s) quand la touche Entre est appuyée lorsque
+        # la sélection est sur le widget entry
         print(
             "Pressed enter ! texte écrit: {} Date heure: {}".format(
                 self.entryVariable.get(), datetime.datetime.now()
             )
         )  # Log comme quoi qqun à appuyé sur la touche Entre
         # self.labelVariable.set( self.entryVariable.get() )   # viens écrire ce qu'i y a d'écrit dans  dans le label
-        self.entry.focus_set()  # Le champ texte sera automatiquement re-sélectionné après que 
-        #l'utilisateur ait pressé ENTREE
+        self.entry.focus_set()  # Le champ texte sera automatiquement re-sélectionné après que
+        # l'utilisateur ait pressé ENTREE
         self.entry.selection_range(0, tk.END)
         DataToSend.put(["text", self.entryVariable.get(), ""], True)
 

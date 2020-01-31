@@ -56,8 +56,8 @@ def connectClient(data_q):
                     IP_address,
                     Port,
                 )
-                
-            #ClientSend("Pseudo:" + Pseudo)
+            print("Test avant envoi pseudo")
+            ClientSend("Pseudo:" + Pseudo)
 
             while alive:
                 try:

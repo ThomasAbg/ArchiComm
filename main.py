@@ -15,7 +15,6 @@ import threading
 import time
 import datetime
 from multiprocessing import Queue
-from PyQt5.QtWidgets import QApplication, QWidget
 
 from Frame import run_window, WriteMsgRcv
 from client import connectClient, ClientSend, exitClient

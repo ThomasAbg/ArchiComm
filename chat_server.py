@@ -34,6 +34,8 @@ def clientthread(conn, addr):
                     msg = "Welcome to this chatroom " + Pseudo + " !"
                     msg_enc = msg.encode()
                     conn.send(msg_enc)
+                    msg = Pseudo + " join the chatroom."
+                    broadcast(msg, conn)
                 elif message == "Leave":
                     msg = Pseudo + " have leave the chatroom."
                     broadcast(msg, conn)

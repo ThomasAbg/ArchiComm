@@ -89,11 +89,11 @@ class Window(Frame):
         self.entry.bind(
             "<Return>", self.OnPressEnter
         )  # récupère ce qu'il y a décrit dans le widget lors de l'appuis sur le bouton
-        self.entryVariable.set("Enter texte ici.")
+        self.entryVariable.set("Msg to send.")
 
         button = tk.Button(
             self,
-            text="click ici !",  # création d'un bouton, attaché à son parent, et avec du texte
+            text="Send",  # création d'un bouton, attaché à son parent, et avec du texte
             command=self.OnButtonClick,
         )  # active la détection d'appuis sur le bouton
         button.grid(column=1, row=0)  # placement du bouton sur la grille
@@ -137,13 +137,14 @@ class Window(Frame):
         DataToSend.put(["text", self.entryVariable.get(), ""], True)
 
     def OnPressEnter(
-        self,
+        self, uselessVar
     ):  # nouvelle méthode pour faire une/des action(s) quand la touche Entre est appuyée lorsque
         # la sélection est sur le widget entry
         print(
-            "Pressed enter ! texte écrit: {} Date heure: {}".format(
-                self.entryVariable.get(), datetime.datetime.now()
-            )
+            "Clicked button !" + " texte écrit:",
+            self.entryVariable.get(),
+            "Date heure:",
+            datetime.datetime.now(),
         )  # Log comme quoi qqun à appuyé sur la touche Entre
         # self.labelVariable.set( self.entryVariable.get() )   # viens écrire ce qu'i y a d'écrit dans  dans le label
         self.entry.focus_set()  # Le champ texte sera automatiquement re-sélectionné après que
@@ -182,18 +183,21 @@ class CustomDialog(sdg.Dialog):
     def body(self, master):
         Label(master, text="Adresse:").grid(row=0)
         Label(master, text="Port:").grid(row=1)
+        Label(master, text="Pseudo:").grid(row=2)
 
         self.ip1 = Entry(master, width=4)
         self.ip2 = Entry(master, width=4)
         self.ip3 = Entry(master, width=4)
         self.ip4 = Entry(master, width=4)
         self.port = Entry(master, width=4)
+        self.Pseudo = Entry(master, width=16)
 
         self.ip1.grid(row=0, column=1)
         self.ip2.grid(row=0, column=2)
         self.ip3.grid(row=0, column=3)
         self.ip4.grid(row=0, column=4)
         self.port.grid(row=1, column=1)
+        self.Pseudo.grid(row=2, column=1, columnspan=3)
         return self.ip1  # renvoi l'élément à focus
 
     def apply(self, title=None):
@@ -219,7 +223,8 @@ class CustomDialog(sdg.Dialog):
                     )
                 ).replace(" ", "")
                 Port = int(self.port.get())
-                DataToSend.put(["Connect", IP, Port], True)
+                Pseudo = self.Pseudo.get()
+                DataToSend.put(["Connect", IP, Port, Pseudo], True)
         except ValueError:
             print("ip incorrect")
 

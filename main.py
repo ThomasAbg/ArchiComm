@@ -15,6 +15,7 @@ import threading
 import time
 import datetime
 from multiprocessing import Queue
+from PyQt5.QtWidgets import QApplication, QWidget
 
 from Frame import run_window, WriteMsgRcv
 from client import connectClient, ClientSend, exitClient
@@ -44,7 +45,13 @@ def running():
             if dataReceive[0] == "Connect":
                 print("Start processus client")
                 statusClient.put(
-                    ["RunClient", dataReceive[1], dataReceive[2]], True
+                    [
+                        "RunClient",
+                        dataReceive[1],
+                        dataReceive[2],
+                        dataReceive[3],
+                    ],
+                    True,
                 )
                 statusConnect = 1
 

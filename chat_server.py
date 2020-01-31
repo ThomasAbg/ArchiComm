@@ -23,19 +23,25 @@ list_of_clients = []
 
 
 def clientthread(conn, addr):
-    msg = "Welcome to this chatroom!"
-    msg_enc = msg.encode()
-    conn.send(msg_enc)
-    # sends a message to the client whose user object is conn
     while True:
         try:
             data_rcv = conn.recv(2048)
             message = data_rcv.decode()
             if message:
-                # prints the message and address of the user who just sent the message on the server terminal
-                print("<" + addr[0] + "> " + message)
-                message_to_send = "<" + addr[0] + "> " + message.encode()
-                broadcast(message_to_send, conn)
+                if message[0:7] == "Pseudo:":
+                    Pseudo = message[7:16]
+                    print(addr[0] + ": " + Pseudo + " connected")
+                    msg = "Welcome to this chatroom " + Pseudo + " !"
+                    msg_enc = msg.encode()
+                    conn.send(msg_enc)
+                elif message == "Leave":
+                    msg = Pseudo + " have leave the chatroom."
+                    broadcast(msg, conn)
+                else:
+                    # prints the message and address of the user who just sent the message on the server terminal
+                    print("<" + addr[0] + "> " + message)
+                    message_to_send = "<" + addr[0] + "> " + message.encode()
+                    broadcast(message_to_send, conn)
             else:
                 remove(conn)
         except:
@@ -44,10 +50,14 @@ def clientthread(conn, addr):
 
 def broadcast(message, connection):
     for clients in list_of_clients:
+        print("client:", clients, "et connection:", connection)
         if clients != connection:
+            print("client != ", connection)
             try:
+                print("send msg")
                 clients.send(message)
             except:
+                print(clients," leave")
                 clients.close()
                 remove(clients)
 
@@ -63,8 +73,8 @@ while True:
     Accepts a connection request and stores two parameters, conn which is a socket object for that user, and addr which contains
     the IP address of the client that just connected
     """
+
     list_of_clients.append(conn)
-    print(addr[0] + " connected")
 
     # maintains a list of clients for ease of broadcasting a message to all available people in the chatroom
     # Prints the address of the person who just connected

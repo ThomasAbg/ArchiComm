@@ -57,7 +57,7 @@ def broadcast(message, connection):
                 print("send msg")
                 clients.send(message)
             except:
-                print(clients," leave")
+                print(clients," Leave")
                 clients.close()
                 remove(clients)
 

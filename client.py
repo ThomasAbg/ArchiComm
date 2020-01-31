@@ -28,48 +28,54 @@ def connectClient(data_q):
     while alive:
         if not data_q.empty():
             dataReceive = data_q.get(False)
-            break
 
-    if alive:
-        if dataReceive[0] == "RunClient":
-            IP_address = dataReceive[1]
-            Port = dataReceive[2]
-            Pseudo = dataReceive[3]
+            if dataReceive[0] == "RunClient":
+                IP_address = dataReceive[1]
+                Port = dataReceive[2]
+                Pseudo = dataReceive[3]
+                catcherror = 0
 
-            try:
-                CLIENT.connect((IP_address, Port))
-
-            except socket.gaierror as e:
-                print(
-                    "Address-related error connecting to CLIENT: ",
-                    e,
-                    " Fail to connect to: ",
-                    IP_address,
-                    Port,
-                )
-
-            except OSError as e:
-                print(
-                    "Connection error: ",
-                    e,
-                    " Fail to connect to: ",
-                    IP_address,
-                    Port,
-                )
-            print("Test avant envoi pseudo")
-            ClientSend("Pseudo:" + Pseudo)
-
-            while alive:
                 try:
-                    data_rcv = CLIENT.recv(2048)
-                except OSError:
-                    pass  # no data receive
-                if not data_rcv:
-                    pass  # no data
+                    CLIENT.connect((IP_address, Port))
+
+                except socket.gaierror as e:
+                    print(
+                        "Address-related error connecting to CLIENT: ",
+                        e,
+                        " Fail to connect to: ",
+                        IP_address,
+                        Port,
+                    )
+                    catcherror = 1
+
+                except OSError as e:
+                    print(
+                        "Connection error: ",
+                        e,
+                        " Fail to connect to: ",
+                        IP_address,
+                        Port,
+                    )
+                    catcherror = 1
+                    
+                if(catcherror == 0):
+                    ClientSend("Pseudo:" + Pseudo)
+                    print("We are CONNECT")
+                    break
                 else:
-                    message = data_rcv.decode()
-                    print("Message recu:", message)
-                    data_q.put(["rcv", message, ""], True)
-                    data_rcv = False
-            CLIENT.close()
-            print("Client close")
+                    print("error has catch")
+
+    while alive:
+        try:
+            data_rcv = CLIENT.recv(2048)
+        except OSError:
+            pass  # no data receive
+        if not data_rcv:
+            pass  # no data
+        else:
+            message = data_rcv.decode()
+            print("Message recu:", message)
+            data_q.put(["rcv", message, ""], True)
+            data_rcv = False
+    CLIENT.close()
+    print("Client close")

@@ -49,7 +49,7 @@ class Window(Frame):
 
         menu = Menu(self.master)  # creating a menu instance
         self.master.config(menu=menu)
-        file = Menu(menu)  # create the file object)
+        file = Menu(menu) 
         file.add_command(
             label="Connect",
             background="lightgray",
@@ -98,19 +98,33 @@ class Window(Frame):
         )  # active la détection d'appuis sur le bouton
         button.grid(column=1, row=0)  # placement du bouton sur la grille
 
-        self.labelVariable = tk.StringVar()  #
-        label = tk.Label(
-            self,
-            textvariable=self.labelVariable,  # Label pour afficher du texte
-            anchor="w",
-            fg="white",
-            bg="green",
-            text="réponse",
-        )  # création d'un label avec une couleur de texte, couleur de fond, et texte
+        global textvar  # affiche de la zone de reception
+        textvar = WritableStringVar(self)
+        
+        label = tk.Label(self, textvariable=textvar)
+        print("Reception area", file=textvar)
         label.grid(
-            column=0, row=1, columnspan=2, sticky="EW"
+            column=0, row=1, columnspan=1, sticky="NS"
         )  # placement du label
-        self.labelVariable.set("Le texte converti sera ici")
+
+        w = Label(self, text="Connecté:")
+        w.grid(
+            column=2, row=0
+        )
+        
+        scrollbar = Scrollbar(self)
+        scrollbar.grid(
+            column=1, row=1
+        )
+        self.listbox = Listbox(self)
+        self.listbox.grid(
+            column=2, row=1, rowspan=2
+        )
+
+        # attach listbox to scrollbar
+        self.listbox.config(yscrollcommand=scrollbar.set)
+        scrollbar.config(command=self.listbox.yview)
+        
 
         self.grid_columnconfigure(
             0, weight=1
@@ -125,12 +139,11 @@ class Window(Frame):
         self,
     ):  # nouvelle méthode pour faire une/des action(s) quand il y a un appuis sur le bouton qui est détecté
         print(
-            "Clicked button !" + " texte écrit:",
+            "Clicked button !" + " writing text:",
             self.entryVariable.get(),
             "Date heure:",
             datetime.datetime.now(),
         )  # Log comme quoi qqun à appuyé sur le bouton
-        # self.labelVariable.set( self.entryVariable.get() )              # viens écrire du contenu dans le label
         self.entry.focus_set()  # Le champ texte sera automatiquement re-sélectionné
         # après que l'utilisateur ait pressé ENTREE
         self.entry.selection_range(0, tk.END)
@@ -141,12 +154,11 @@ class Window(Frame):
     ):  # nouvelle méthode pour faire une/des action(s) quand la touche Entre est appuyée lorsque
         # la sélection est sur le widget entry
         print(
-            "Clicked button !" + " texte écrit:",
+            "Clicked button !" + " writing text:",
             self.entryVariable.get(),
-            "Date heure:",
+            "Date hours:",
             datetime.datetime.now(),
         )  # Log comme quoi qqun à appuyé sur la touche Entre
-        # self.labelVariable.set( self.entryVariable.get() )   # viens écrire ce qu'i y a d'écrit dans  dans le label
         self.entry.focus_set()  # Le champ texte sera automatiquement re-sélectionné après que
         # l'utilisateur ait pressé ENTREE
         self.entry.selection_range(0, tk.END)
@@ -154,7 +166,7 @@ class Window(Frame):
 
     def connect_action(self):
         print("Try connection at {}".format(datetime.datetime.now()))
-        CustomDialog(self, title="Choisie un server")
+        CustomDialog(self, title="Choice a server")
 
     def MAJRcvMsg(self, data):
         self.labelVariable.set(data)
@@ -174,6 +186,15 @@ class Window(Frame):
                     self.master.title(), datetime.datetime.now()
                 )
             )
+
+
+class WritableStringVar(tk.StringVar):
+    def write(self, added_text):
+        new_text = self.get() + added_text
+        self.set(new_text)
+
+    def clear(self):
+        self.set("")
 
 
 class CustomDialog(sdg.Dialog):
@@ -238,8 +259,17 @@ def dimention(self):
 
 
 def WriteMsgRcv(dataRcv):
-    app.labelVariable.set(dataRcv)
+    global textvar
+    print(dataRcv, file=textvar)
 
+
+def addClient(data):
+    print("Ajouter dans la liste:",data)
+    app.listbox.insert(END, data)
+
+def removeClient(target):
+    indexTarget = app.listbox.get(0, tk.END).index(target)
+    app.listbox.delete(indexTarget)
 
 # if __name__ == "__main__":
 def run_window(status):

@@ -1,6 +1,7 @@
 import socket
-from thread import *
+import threading
 import sys
+import datetime
 
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -28,41 +29,52 @@ def clientthread(conn, addr):
             data_rcv = conn.recv(2048)
             message = data_rcv.decode()
             if message:
-                if message[0:7] == "Pseudo:":
+                if message[0:7] == "P%µudo:":
+                    print("1")
                     Pseudo = message[7:16]
-                    print(addr[0] + ": " + Pseudo + " connected")
+                    print(datetime.datetime.now(), " <" + addr[0] + "> " + ": " + Pseudo + " connected")
                     msg = "Welcome to this chatroom " + Pseudo + " !"
-                    msg_enc = msg.encode()
-                    conn.send(msg_enc)
-                    msg = Pseudo + " join the chatroom."
-                    broadcast(msg, conn)
+                    conn.send(msg.encode())
+                    print("2")
+                    msg = Pseudo + " join the chatµ%£=."
+                    sendmsg(msg.encode(), conn, 1)
+                    print("la liste:", list_of_clients)
+                    print("3", conn)
+                    indexClient = list_of_clients.index(conn)
+                    print("4 ", indexClient)
+                    print(" contenu1: ", list_of_clients[indexClient])
+                    list_of_clients[indexClient].append(Pseudo)
+                    print(" contenu2 ", list_of_clients[indexClient])
+                    print("Yo")
+                    print("conn:", conn) 
                 elif message == "Leave":
-                    msg = Pseudo + " have leave the chatroom."
-                    broadcast(msg, conn)
+                    msg = Pseudo + " is discon3630."
+                    sendmsg(msg.encode(), conn, 1)
                 else:
+                    print("Hum")
                     # prints the message and address of the user who just sent the message on the server terminal
-                    print("<" + addr[0] + "> " + message)
-                    message_to_send = "<" + addr[0] + "> " + message.encode()
-                    broadcast(message_to_send, conn)
+                    print(datetime.datetime.now(), " ", "<" + addr[0] + "> " + Pseudo + ": " + message)
+                    message_to_send = Pseudo + ": " + message
+                    sendmsg(message_to_send.encode(), conn, 1)
             else:
                 remove(conn)
         except:
             continue
 
 
-def broadcast(message, connection):
+def sendmsg(message, connection, modebroadcast):
     for clients in list_of_clients:
-        print("client:", clients, "et connection:", connection)
-        if clients != connection:
-            print("client != ", connection)
-            try:
-                print("send msg")
-                clients.send(message)
-            except:
-                print(clients," Leave")
-                clients.close()
-                remove(clients)
-
+        if(modebroadcast):
+            if clients != connection:
+                try:
+                    clients.send(message)
+                except:
+                    print(datetime.datetime.now(), " ", clients, " Leave")
+                    clients.close()
+                    remove(clients)
+        elif(clients == connection): #mode private message
+            clients.send(message)
+            break
 
 def remove(connection):
     if connection in list_of_clients:
@@ -80,7 +92,7 @@ while True:
 
     # maintains a list of clients for ease of broadcasting a message to all available people in the chatroom
     # Prints the address of the person who just connected
-    start_new_thread(clientthread, (conn, addr))
+    threading._start_new_thread(clientthread, (conn, addr))
     # creates and individual thread for every user that connects
 
 

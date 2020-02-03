@@ -1,21 +1,10 @@
 import socket
 import select
 import socket
-
+import time
 
 CLIENT = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 CLIENT.setblocking(0)
-
-
-def exitClient():
-    global alive
-    alive = False
-    ClientSend("Leave")
-
-
-def ClientSend(data):
-    byt_message = data.encode()
-    CLIENT.send(byt_message)
 
 
 def connectClient(data_q):
@@ -57,9 +46,9 @@ def connectClient(data_q):
                         Port,
                     )
                     catcherror = 1
-                    
-                if(catcherror == 0):
-                    ClientSend("Pseudo:" + Pseudo)
+
+                if catcherror == 0:
+                    ClientSend("P%µudo:" + Pseudo)
                     print("We are CONNECT")
                     break
                 else:
@@ -70,12 +59,28 @@ def connectClient(data_q):
             data_rcv = CLIENT.recv(2048)
         except OSError:
             pass  # no data receive
-        if not data_rcv:
-            pass  # no data
-        else:
+        if data_rcv:
             message = data_rcv.decode()
             print("Message recu:", message)
-            data_q.put(["rcv", message, ""], True)
+            if message.endswith("chatµ%£=."): # detect new client in chatroom
+                message = message[:-19]
+                data_q.put(["Connclient", message])
+            elif(message.endswith("discon3630.")): # detect client leave chatroom
+                message = message[:-15]
+                data_q.put(["Discoclient", message])
+            else:
+                data_q.put(["rcv", message, ""], True)
             data_rcv = False
     CLIENT.close()
+   
     print("Client close")
+
+
+def ClientSend(data):
+    byt_message = data.encode()
+    CLIENT.send(byt_message)
+
+def exitClient():
+    global alive
+    alive = False
+

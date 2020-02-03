@@ -13,10 +13,11 @@
 #!/usr/bin/env python
 import threading
 import time
+import os
 import datetime
 from multiprocessing import Queue
 
-from Frame import run_window, WriteMsgRcv
+from Frame import run_window, WriteMsgRcv, addClient, removeClient
 from client import connectClient, ClientSend, exitClient
 
 
@@ -34,6 +35,11 @@ def running():
             if dataReceiveClient[0] == "rcv":
                 print("dataReceiveClient: ", dataReceiveClient[1])
                 WriteMsgRcv(dataReceiveClient[1])
+            elif(dataReceiveClient[0] == "Connclient"):
+                addClient(dataReceiveClient[1])
+            elif(dataReceiveClient[0] == "Discoclient"):
+                ClientSend("Leave")
+                removeClient(dataReceiveClient[1])
 
         elif not status.empty():
             dataReceive = status.get()
@@ -63,6 +69,8 @@ def running():
                 )
 
             if dataReceive == "exit":
+                if(statusConnect == 1):
+                    ClientSend("Leave")
                 exitClient()
                 print("Main close")
                 break
@@ -83,5 +91,8 @@ thread1.join()
 thread2.join()
 status.close()
 statusClient.close()
+
+# Sous Windows il faut mettre ce programme en pause (inutile sous Linux)
+#os.system("pause")
 
 print("All threads close")

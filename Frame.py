@@ -49,7 +49,7 @@ class Window(Frame):
 
         menu = Menu(self.master)  # creating a menu instance
         self.master.config(menu=menu)
-        file = Menu(menu) 
+        file = Menu(menu, tearoff=0)
         file.add_command(
             label="Connect",
             background="lightgray",
@@ -63,7 +63,7 @@ class Window(Frame):
             command=self.close_application,
         )  # adds a command to the menu option, calling it exit, and the command it runs on event is Exit
         menu.add_cascade(label="File", menu=file)  # added "file" to our menu
-        edit = Menu(menu)  # create the file object)
+        edit = Menu(menu, tearoff=0)  # create the file object)
         edit.add_command(
             label="Undo"
         )  # adds a command to the menu option, calling it exit, and the command it runs on event is Exit
@@ -100,31 +100,25 @@ class Window(Frame):
 
         global textvar  # affiche de la zone de reception
         textvar = WritableStringVar(self)
-        
-        label = tk.Label(self, textvariable=textvar)
+
+        wwindow, hwindow, xwindow, ywindow = dimention(self)
+        label = tk.Label(self, textvariable=textvar, height=10)
         print("Reception area", file=textvar)
         label.grid(
             column=0, row=1, columnspan=1, sticky="NS"
         )  # placement du label
 
         w = Label(self, text="Connecté:")
-        w.grid(
-            column=2, row=0
-        )
-        
-        scrollbar = Scrollbar(self)
-        scrollbar.grid(
-            column=1, row=1
-        )
+        w.grid(column=2, row=0)
+
+        scrollbarclient = Scrollbar(self)
+        scrollbarclient.grid(column=1, row=1)
         self.listbox = Listbox(self)
-        self.listbox.grid(
-            column=2, row=1, rowspan=2
-        )
+        self.listbox.grid(column=2, row=1, rowspan=2)
 
         # attach listbox to scrollbar
-        self.listbox.config(yscrollcommand=scrollbar.set)
-        scrollbar.config(command=self.listbox.yview)
-        
+        self.listbox.config(yscrollcommand=scrollbarclient.set)
+        scrollbarclient.config(command=self.listbox.yview)
 
         self.grid_columnconfigure(
             0, weight=1
@@ -264,12 +258,14 @@ def WriteMsgRcv(dataRcv):
 
 
 def addClient(data):
-    print("Ajouter dans la liste:",data)
+    print("Ajouter dans la liste:", data)
     app.listbox.insert(END, data)
+
 
 def removeClient(target):
     indexTarget = app.listbox.get(0, tk.END).index(target)
     app.listbox.delete(indexTarget)
+
 
 # if __name__ == "__main__":
 def run_window(status):
@@ -279,7 +275,7 @@ def run_window(status):
     # root window created. Here, that would be the only window, but
     # you can later have windows within windows.
     root = Tk()
-    root.title("Fenetre modèle")  # on name la fonction
+    root.title("ArchiComm")  # on name la fonction
 
     root.geometry("%dx%d+%d+%d" % (dimention(root)))  # dimentionne la fenetre
     app = Window(root)  # creation of an instance

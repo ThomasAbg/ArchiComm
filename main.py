@@ -30,7 +30,7 @@ def running():
     while 1:
         if not statusClient.empty():
             dataReceiveClient = statusClient.get()
-            print("MAIN data from Client: ", dataReceiveClient)
+            print("Sys msg from Client: ", dataReceiveClient)
             if dataReceiveClient[0] == "rcv":
                 print("dataReceiveClient: ", dataReceiveClient[1])
                 WriteMsgRcv(dataReceiveClient[1])
@@ -42,7 +42,7 @@ def running():
         elif not status.empty():
             dataReceive = status.get()
             print(
-                "MAIN data from Frame: ", dataReceive
+                "Sys msg from Frame: ", dataReceive
             )  # prints "[42, None, 'hello']"
 
             if dataReceive[0] == "Connect":

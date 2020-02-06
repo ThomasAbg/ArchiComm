@@ -93,7 +93,8 @@ def connectClient(data_q):
 
             message = ""
             data_rcv = False
-    CLIENT.close()
+    
+        CLIENT.close()
 
     print("Client close")
 

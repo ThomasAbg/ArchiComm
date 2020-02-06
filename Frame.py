@@ -112,9 +112,9 @@ class Window(Frame):
         w.grid(column=2, row=0)
 
         scrollbarclient = Scrollbar(self)
-        scrollbarclient.grid(column=1, row=1)
+        scrollbarclient.grid(column=1, row=1, sticky="NE")
         self.listbox = Listbox(self)
-        self.listbox.grid(column=2, row=1, rowspan=2)
+        self.listbox.grid(column=2, row=1, rowspan=2, sticky="NE")
 
         # attach listbox to scrollbar
         self.listbox.config(yscrollcommand=scrollbarclient.set)

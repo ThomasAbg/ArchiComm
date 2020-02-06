@@ -102,7 +102,7 @@ class Window(Frame):
         textvar = WritableStringVar(self)
 
         wwindow, hwindow, xwindow, ywindow = dimention(self)
-        label = tk.Label(self, textvariable=textvar, height=10)
+        label = tk.Label(self, textvariable=textvar, height=20)
         print("Reception area", file=textvar)
         label.grid(
             column=0, row=1, columnspan=1, sticky="NS"

@@ -1,7 +1,12 @@
 import socket
 import threading
 import sys
+import time
 import datetime
+import simplelogging
+from typing import List
+
+log = simplelogging.get_logger()
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 """
@@ -19,53 +24,27 @@ server.bind((IP_address, Port))
 # binds the server to an entered IP address and at the specified port number. The client must be aware of these parameters
 server.listen(100)
 # listens for 100 active connections. This number can be increased as per convenience
-list_of_clients = []
+list_of_clients: List[socket.socket] = []
 list_of_pseudo = []
 
 
 def clientthread(conn, addr):
+    message = ""
+    Pseudo = ""
     while True:
         try:
             data_rcv = conn.recv(2048)
-            message = data_rcv.decode()
-            if message:
-                if message[0:7] == "P%µudo:":
-                    Pseudo = message[7:16]
-                    print(
-                        datetime.datetime.now(),
-                        "<" + addr[0] + "> " + ": " + Pseudo + " connected",
-                    )
-                    msg = (
-                        "Welcome to this chatroom "
-                        + Pseudo
-                        + " !"
-                        + " E!§N/!D"
-                    )
-                    sendmsg(msg, conn, 0)
-                    lenght = len(list_of_pseudo) + 100
-                    data = str(list_of_pseudo) + str(lenght) + "AAAZEZ"
-                    sendmsg(
-                        data, conn, 0
-                    )  # send pseudo list to the new client
-                    msg = (
-                        Pseudo + " join the chatµ%£=."
-                    )  # send who join to everyone
-                    sendmsg(msg, conn, 1)
-                    list_of_pseudo.append(
-                        Pseudo
-                    )  # add client speudo in pseudo list
-                    print("TAB:", list_of_pseudo)
-                elif message == "Leave":
-                    list_of_pseudo.remove(
-                        Pseudo
-                    )  # remove client of pseudo list
-                    print("List pseudo:", list_of_pseudo)
-                    msg = Pseudo + " is discon3630."
-                    sendmsg(msg, conn, 1)
-                    print(
-                        datetime.datetime.now(),
-                        "<" + addr[0] + "> " + ": " + Pseudo + " disconneted",
-                    )
+            if data_rcv:
+                print("Exact data rcv:", data_rcv)
+                ID = int(data_rcv[0])
+                print("ID=", ID)
+                lenght = int(data_rcv[1])
+                for i in range(lenght):
+                    message += chr(data_rcv[3 + i])
+                if ID == 10:
+                    Pseudo = treatmentConnection(conn, addr, message)
+                elif ID == 99:
+                    treatmentDisconnection(conn, addr, message)
                 else:
                     # prints the message and address of the user who just sent the message on the server terminal
                     print(
@@ -73,16 +52,76 @@ def clientthread(conn, addr):
                         " ",
                         "<" + addr[0] + "> " + Pseudo + ": " + message,
                     )
-                    message_to_send = Pseudo + ": " + message + " E!§N/!D"
-                    sendmsg(message_to_send, conn, 1)
-            else:
-                remove(conn)
+                    message_to_send = Pseudo + ": " + message
+                    bytesmsg = bytearray(3)
+                    bytesmsg[0] = 1
+                    bytesmsg[1] = len(message_to_send)
+                    bytesmsg.extend(map(ord, message_to_send))
+                    sendmsg(bytesmsg, conn, 1)
+            """else:
+                remove(conn)"""
         except:
             continue
 
 
-def sendmsg(message, connection, modebroadcast):
-    message = message.encode()
+def treatmentConnection(conn, addr, message):
+    ###### send the welcome message ######
+    Pseudo = message
+    lenght = 0
+    log.info("<" + addr[0] + "> " + ": " + Pseudo + " connected")
+    msg = "Welcome to this chatroom " + Pseudo + " !"
+    test = bytes(msg, "utf8")
+    bytesmsg = bytearray(3)
+    bytesmsg[0] = 1
+    bytesmsg[1] = len(test)
+    bytesmsg.extend(map(ord, msg))
+    sendmsg(bytesmsg, conn, modebroadcast=False)
+    bytesmsg = bytearray(3)
+
+    time.sleep(0.2)
+
+    ###### send pseudo list to the new client ######
+    bytesmsg[0] = 2
+    for element in list_of_pseudo:
+        lenght += len(element)
+    bytesmsg[1] = lenght
+    i = 2
+    for pseudoelem in list_of_pseudo:
+        pseudoelem = pseudoelem + ","
+        bytesmsg[1] += 1  # add "," in the lenght of message
+        bytesmsg.extend(bytearray(pseudoelem, "utf-8"))
+        i += 1
+    print("!!!!!!!! msg:", bytesmsg)
+    sendmsg(bytesmsg, conn, modebroadcast=False)
+    print("DONEEE")
+    bytesmsg = bytearray(3)
+
+    ###### send who join to everyone ######
+    msg = Pseudo
+    bytesmsg[0] = 3
+    bytesmsg[1] = len(Pseudo)
+    bytesmsg.extend(Pseudo.encode())
+    sendmsg(bytesmsg, conn, modebroadcast=True)
+    list_of_pseudo.append(Pseudo)
+    log.info("List pseudo:%s", list_of_pseudo)
+    bytesmsg = bytearray(3)
+
+    return Pseudo
+
+
+def treatmentDisconnection(conn, addr, message):
+    bytesmsg = bytearray(3)
+    bytesmsg[0] = 99
+    bytesmsg[1] = len(message)
+    bytesmsg.extend(message.encode())
+    sendmsg(bytesmsg, conn, 1)
+    list_of_pseudo.remove(message)  # remove client of pseudo list
+    print("Client:", message, "disconnected")
+
+
+def sendmsg(message: bytearray, connection, modebroadcast):
+    # message = message.encode("utf8")
+    # broadcast send to everyone expect transmitter
     for clients in list_of_clients:
         if modebroadcast:
             if clients != connection:
@@ -93,6 +132,7 @@ def sendmsg(message, connection, modebroadcast):
                     clients.close()
                     remove(clients)
         elif clients == connection:  # mode private message
+            print("MESSAGE SEND:", message)
             clients.send(message)
             break
 
@@ -115,7 +155,6 @@ while True:
     # Prints the address of the person who just connected
     threading._start_new_thread(clientthread, (conn, addr))
     # creates and individual thread for every user that connects
-
 
 conn.close()
 server.close()

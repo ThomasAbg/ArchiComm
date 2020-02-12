@@ -8,7 +8,9 @@ def connectClient(data_q):
     alive = True
     data_rcv = ""
     dataReceive = []
+    message = ""
 
+    # process connection
     while alive:
         if not data_q.empty():
             dataReceive = data_q.get(False)
@@ -46,64 +48,69 @@ def connectClient(data_q):
                     catcherror = 1
 
                 if catcherror == 0:
-                    ClientSend("P%µudo:" + Pseudo)
+                    ClientSend(10, Pseudo)
                     print("We are CONNECT")
                     break
                 else:
                     print("error has catch")
 
+    # process connection done, life of communication
     while alive:
         try:
             data_rcv = CLIENT.recv(2048)
         except OSError:
             pass  # no data receive
         if data_rcv:
-            message = data_rcv.decode()
-            print("Message recu:", message)
+            # message = data_rcv.decode()
+            data_rcv[0]
+            lenght = data_rcv[1]
+            print("ID receive:", data_rcv[0])
+            print("lenght receive:", data_rcv[1])
+            for i in range(lenght + 1):
+                message += chr(data_rcv[i + 2])
+            message = message[1:]
+            print("Message rcv:", message)
 
-            if message.endswith(" E!§N/!D"):
-                print("Free message")
-                message = message[:-7]
+            # receive new classique message
+            if data_rcv[0] == 1:
                 data_q.put(["rcv", message, ""], True)
 
-            elif message.endswith(
-                "chatµ%£=."
-            ):  # detect new client in chatroom
-                PseudoCco = message[:-19]
-                data_q.put(["Connclient", PseudoCco])
+            # receive new client connect in chatroom
+            elif data_rcv[0] == 2:
+                print("message for 2:", message)
+                pseudos = message.split(",")
+                print("pseudos:", pseudos)
+                for pseudo in pseudos:
+                    if pseudo != "":
+                        print("pseudo[", i, "]=", pseudo)
+                        data_q.put(["Connclient", pseudo])
 
-            elif message.endswith("AAAZEZ"):
-                message = message[:-6]
-                lenght = int(message[-3:]) - 100
-                message = message[:-3]
-                listclient = message[:-lenght]
-                print("listclient:", listclient)
-                if lenght != 0:
-                    for i in range(lenght):
-                        clientco = replaceMultiple(
-                            listclient.split('"')[i], ["[", "]", '"', "'"], ""
-                        )
-                        data_q.put(["Connclient", clientco])
+            # receive list currently connected client
+            elif data_rcv[0] == 3 and lenght != 0:
+                print("MESSAGE3:", message, type(message))
+                data_q.put(["Connclient", message])
 
-            elif message.endswith(
-                "discon3630."
-            ):  # detect client leave chatroom
-                message = message[:-15]
+            # detect client leave chatroom
+            elif data_rcv[0] == 99:
                 data_q.put(["Discoclient", message])
 
             message = ""
             data_rcv = False
-    
-        CLIENT.close()
 
+    CLIENT.close()
     print("Client close")
 
 
-def ClientSend(data):
-    byt_message = data.encode()
-    CLIENT.send(byt_message)
+def ClientSend(code: int, data: str):
+    global CLIENT
+    bytesmsg = bytearray(3)
+    bytesmsg[0] = code
+    bytesmsg[1] = len(data)
+    bytesmsg.extend(data.encode())
+    CLIENT.send(bytesmsg)
 
 
+# replaceMultiple(list[i], ["[", "]", '"', "'"], "")
 def replaceMultiple(mainString, toBeReplaces, newString):
     # Iterate over the strings to be replaced
     for elem in toBeReplaces:

@@ -41,9 +41,7 @@ def running():
 
         elif not status.empty():
             dataReceive = status.get()
-            print(
-                "Sys msg from Frame: ", dataReceive
-            )  # prints "[42, None, 'hello']"
+            print("Sys msg from Frame: ", dataReceive)
 
             if dataReceive[0] == "Connect":
                 print("Start processus client")
@@ -68,11 +66,10 @@ def running():
 
             if dataReceive == "exit":
                 if statusConnect == 1:
-                    ClientSend("Leave")
+                    ClientSend(99, "")
                 exitClient()
                 print("Main close")
                 break
-
         else:
             time.sleep(0.1)
 

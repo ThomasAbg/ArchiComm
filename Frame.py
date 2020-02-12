@@ -120,23 +120,23 @@ class Window(Frame):
         self.listbox.config(yscrollcommand=scrollbarclient.set)
         scrollbarclient.config(command=self.listbox.yview)
 
-        self.grid_columnconfigure(
-            0, weight=1
-        )  # permet de redimentioner en manuel la taille de la fenetre
-        self.entry.focus_set()  # Le champ texte sera automatiquement re-sélectionné
+        # permet de redimentioner en manuel la taille de la fenetre
+        self.grid_columnconfigure(0, weight=1)
+
+        # Le champ texte sera automatiquement re-sélectionné
+        self.entry.focus_set()
         # après que l'utilisateur ait pressé ENTREE
-        self.entry.selection_range(
-            0, tk.END
-        )  # Il pourra ainsi taper immédiatement un nouveau texte dans le champ (en remplaçant le texte existant).
+        # Il pourra ainsi taper immédiatement un nouveau texte dans le champ (en remplaçant le texte existant).
+        self.entry.selection_range(0, tk.END)
 
     def OnButtonClick(
         self,
     ):  # nouvelle méthode pour faire une/des action(s) quand il y a un appuis sur le bouton qui est détecté
         print(
+            "At:",
+            datetime.datetime.now(),
             "Clicked button !" + " writing text:",
             self.entryVariable.get(),
-            "Date heure:",
-            datetime.datetime.now(),
         )  # Log comme quoi qqun à appuyé sur le bouton
         self.entry.focus_set()  # Le champ texte sera automatiquement re-sélectionné
         # après que l'utilisateur ait pressé ENTREE
@@ -148,14 +148,15 @@ class Window(Frame):
     ):  # nouvelle méthode pour faire une/des action(s) quand la touche Entre est appuyée lorsque
         # la sélection est sur le widget entry
         print(
+            "At:",
+            datetime.datetime.now(),
             "Clicked button !" + " writing text:",
             self.entryVariable.get(),
-            "Date hours:",
-            datetime.datetime.now(),
         )  # Log comme quoi qqun à appuyé sur la touche Entre
         self.entry.focus_set()  # Le champ texte sera automatiquement re-sélectionné après que
         # l'utilisateur ait pressé ENTREE
         self.entry.selection_range(0, tk.END)
+        WriteMsgRcv("Me:" + self.entryVariable.get())
         DataToSend.put(["text", self.entryVariable.get(), ""], True)
 
     def connect_action(self):
@@ -166,7 +167,7 @@ class Window(Frame):
         self.labelVariable.set(data)
 
     def close_application(self):
-        print("Menu, Exit, à", datetime.datetime.now())
+        print("At:", datetime.datetime.now(), "Menu, Exit")
         if tk.messagebox.askokcancel("Quit", "Do you really wish to quit?"):
             print(
                 "Fermeture de la fenetre: {} à {}".format(
@@ -176,9 +177,10 @@ class Window(Frame):
             self.master.quit()
         else:
             print(
-                "Tentative de fermeture de la fenetre: {} à {}".format(
-                    self.master.title(), datetime.datetime.now()
-                )
+                "At:",
+                datetime.datetime.now(),
+                "Tentative de fermeture de la fenetre: ",
+                self.master.title(),
             )
 
 

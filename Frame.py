@@ -27,6 +27,10 @@ import tkinter as tk
 from tkinter import simpledialog as sdg
 import datetime
 
+flag_list = []
+list_pseudo = []
+Pseudo_ok = False
+
 # Here, we are creating our class, Window, and inheriting from the Frame
 # class. Frame is a class from the tkinter module. (see Lib/tkinter/__init__)
 class Window(Frame):
@@ -89,7 +93,7 @@ class Window(Frame):
         self.entry.bind(
             "<Return>", self.OnPressEnter
         )  # récupère ce qu'il y a décrit dans le widget lors de l'appuis sur le bouton
-        self.entryVariable.set("Msg to send.")
+        self.entryVariable.set("not usable at the moment")
 
         button = tk.Button(
             self,
@@ -129,9 +133,8 @@ class Window(Frame):
         # Il pourra ainsi taper immédiatement un nouveau texte dans le champ (en remplaçant le texte existant).
         self.entry.selection_range(0, tk.END)
 
-    def OnButtonClick(
-        self,
-    ):  # nouvelle méthode pour faire une/des action(s) quand il y a un appuis sur le bouton qui est détecté
+    def OnButtonClick(self,):
+        # nouvelle méthode pour faire une/des action(s) quand il y a un appuis sur le bouton qui est détecté
         print(
             "At:",
             datetime.datetime.now(),
@@ -141,11 +144,10 @@ class Window(Frame):
         self.entry.focus_set()  # Le champ texte sera automatiquement re-sélectionné
         # après que l'utilisateur ait pressé ENTREE
         self.entry.selection_range(0, tk.END)
-        DataToSend.put(["text", self.entryVariable.get(), ""], True)
+        gestion_sending(self)
 
-    def OnPressEnter(
-        self, uselessVar
-    ):  # nouvelle méthode pour faire une/des action(s) quand la touche Entre est appuyée lorsque
+    def OnPressEnter(self, uselessVar):
+        # nouvelle méthode pour faire une/des action(s) quand la touche Entre est appuyée lorsque
         # la sélection est sur le widget entry
         print(
             "At:",
@@ -153,15 +155,14 @@ class Window(Frame):
             "Clicked button !" + " writing text:",
             self.entryVariable.get(),
         )  # Log comme quoi qqun à appuyé sur la touche Entre
-        self.entry.focus_set()  # Le champ texte sera automatiquement re-sélectionné après que
-        # l'utilisateur ait pressé ENTREE
+        # Le champ texte sera automatiquement re-sélectionné après que l'utilisateur ait pressé ENTREE
+        self.entry.focus_set()
         self.entry.selection_range(0, tk.END)
-        WriteMsgRcv("Me:" + self.entryVariable.get())
-        DataToSend.put(["text", self.entryVariable.get(), ""], True)
+        gestion_sending(self)
 
     def connect_action(self):
         print("Try connection at {}".format(datetime.datetime.now()))
-        CustomDialog(self, title="Choice a server")
+        dialog_conn(self, title="Choice a server")
 
     def MAJRcvMsg(self, data):
         self.labelVariable.set(data)
@@ -193,28 +194,28 @@ class WritableStringVar(tk.StringVar):
         self.set("")
 
 
-class CustomDialog(sdg.Dialog):
+class dialog_conn(sdg.Dialog):
     def __init__(self, parent, title=None):
         super().__init__(parent, title=title)
 
     def body(self, master):
         Label(master, text="Adresse:").grid(row=0)
         Label(master, text="Port:").grid(row=1)
-        Label(master, text="Pseudo:").grid(row=2)
+        # Label(master, text="Pseudo:").grid(row=2)
 
         self.ip1 = Entry(master, width=4)
         self.ip2 = Entry(master, width=4)
         self.ip3 = Entry(master, width=4)
         self.ip4 = Entry(master, width=4)
         self.port = Entry(master, width=4)
-        self.Pseudo = Entry(master, width=16)
+        # self.Pseudo = Entry(master, width=16)
 
         self.ip1.grid(row=0, column=1)
         self.ip2.grid(row=0, column=2)
         self.ip3.grid(row=0, column=3)
         self.ip4.grid(row=0, column=4)
         self.port.grid(row=1, column=1)
-        self.Pseudo.grid(row=2, column=1, columnspan=3)
+        # self.Pseudo.grid(row=2, column=1, columnspan=3)
         return self.ip1  # renvoi l'élément à focus
 
     def apply(self, title=None):
@@ -240,10 +241,29 @@ class CustomDialog(sdg.Dialog):
                     )
                 ).replace(" ", "")
                 Port = int(self.port.get())
-                Pseudo = self.Pseudo.get()
-                DataToSend.put(["Connect", IP, Port, Pseudo], True)
+                # Pseudo = self.Pseudo.get()
+                DataToSend.put(["Connect", IP, Port], True)
         except ValueError:
             print("ip incorrect")
+
+
+def gestion_sending(self):
+    global flag_list
+    global list_pseudo
+    global Pseudo_ok
+    if flag_list:
+        if Pseudo_ok == True:
+            WriteMsgRcv("Me: " + self.entryVariable.get())
+            DataToSend.put(["text", self.entryVariable.get(), ""], True)
+        else:
+            write_pseudo = self.entryVariable.get()
+            if write_pseudo not in list_pseudo:
+                print("PSEUDO OK")
+                Pseudo_ok = True
+                DataToSend.put(["Pseudo", self.entryVariable.get(), ""], True)
+            else:
+                Pseudo_ok = False
+                print("PSEUDO NOK")
 
 
 def dimention(self):
@@ -260,11 +280,22 @@ def WriteMsgRcv(dataRcv):
 
 
 def addClient(data):
+    global list_pseudo
     print("Ajouter dans la liste:", data)
+    list_pseudo.append(data)
     app.listbox.insert(END, data)
 
 
+def set_flag_list():
+    global app
+    global flag_list
+    flag_list = True
+    app.entryVariable.set("Write your pseudo here")
+    app.entry.focus_set()
+
+
 def removeClient(target):
+    global app
     indexTarget = app.listbox.get(0, tk.END).index(target)
     app.listbox.delete(indexTarget)
 
@@ -273,6 +304,11 @@ def removeClient(target):
 def run_window(status):
     global DataToSend
     global app
+    global flag_list
+    global list_pseudo
+    global Pseudo_ok
+    Pseudo_ok = False
+    flag_list = False
     DataToSend = status
     # root window created. Here, that would be the only window, but
     # you can later have windows within windows.
